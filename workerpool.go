@@ -54,7 +54,7 @@ func NewWorkPool(size int) *workPool {
 }
 
 // Run launches a number of workers (determined by the work pool size) in their own goroutines to run the task.
-// Besides, it will launch a separate result handler which consumes the task results.
+// Besides, it will launch a separate result handler (can be nil) which consumes the task results.
 //
 // If any task hits an error, or the result handler hits an error. The workers will stop handling tasks.
 // Especially, if there are undergoing tasks running when the error occurs, those tasks will be handled, and the error
@@ -95,7 +95,7 @@ func (wp *workPool) Run(h ResultHandler) {
 		var result error
 		for res := range wp.resultCh {
 			err := res.Error
-			if err == nil {
+			if err == nil && h != nil {
 				err = h(res.Value)
 				if err != nil {
 					err = fmt.Errorf("task handler error: %w", err)
